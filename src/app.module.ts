@@ -20,6 +20,9 @@ import { ExternalApiModule } from './external-api/external-api.module';
         database: config.get<string>('DB_NAME', 'latamatters'),
         autoLoadEntities: true,
         synchronize: false,
+        ssl: {
+          rejectUnauthorized: false,
+        },
       }),
     }),
     ExternalApiModule,
