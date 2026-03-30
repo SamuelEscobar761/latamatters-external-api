@@ -23,7 +23,7 @@ const PRESIGNED_URL_EXPIRY_SECONDS = 86400;
  */
 @Injectable()
 export class ExternalApiService {
-  private readonly s3Client: S3Client;
+  private readonly s3Client: S3Client | null;
   private readonly bucketName: string;
 
   constructor(
@@ -36,10 +36,18 @@ export class ExternalApiService {
     @InjectRepository(Country)
     private readonly countryRepository: Repository<Country>,
   ) {
-    this.s3Client = new S3Client({
-      region: process.env.AWS_REGION ?? 'us-east-1',
-    });
-    this.bucketName = process.env.AWS_S3_BUCKET ?? '';
+    // Initialize S3 client only if AWS configuration is provided
+    const awsRegion = process.env.AWS_REGION;
+    const awsBucket = process.env.S3_BUCKET;
+
+    if (awsRegion && awsBucket) {
+      this.s3Client = new S3Client({ region: awsRegion });
+      this.bucketName = awsBucket;
+    } else {
+      this.s3Client = null;
+      this.bucketName = '';
+      console.log('[ExternalApiService] S3 not configured - file download URLs will not be available');
+    }
   }
 
   /**
