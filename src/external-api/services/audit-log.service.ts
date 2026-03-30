@@ -8,13 +8,15 @@ import { AuditLog } from '../entities/audit-log.entity';
  */
 export interface AuditLogPayload {
   action: string;
+  userId?: string | null;
+  countryId?: string | null;
   ipAddress: string;
-  details: Record<string, unknown>;
+  details: string;
 }
 
 /**
  * Records external API access events in the AUDIT_LOGS table.
- * Satisfies US-35 AC-3: traceability of who extracts data and from which IP.
+ * Tracks which external client accessed what data and from which IP.
  */
 @Injectable()
 export class AuditLogService {
@@ -25,15 +27,15 @@ export class AuditLogService {
 
   /**
    * Persists an audit event for an external API request.
-   * @param payload - Action identifier, originating IP and contextual details.
+   * @param payload - Action identifier, user ID, country ID, originating IP and contextual details.
    */
   async log(payload: AuditLogPayload): Promise<void> {
     const entry = this.auditLogRepository.create({
       action: payload.action,
+      userId: payload.userId ?? null,
+      countryId: payload.countryId ?? null,
       ipAddress: payload.ipAddress,
-      details: JSON.stringify(payload.details),
-      userId: null,
-      countryId: null,
+      details: payload.details,
     });
 
     await this.auditLogRepository.save(entry);

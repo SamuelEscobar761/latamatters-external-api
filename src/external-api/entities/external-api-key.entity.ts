@@ -9,13 +9,13 @@ export class ExternalApiKey {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'client_name' })
+  @Column({ name: 'client_name', type: 'varchar' })
   clientName: string;
 
-  @Column({ name: 'api_key_hash' })
+  @Column({ name: 'api_key_hash', type: 'varchar' })
   apiKeyHash: string;
 
-  @Column({ name: 'is_active', default: true })
+  @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
   @CreateDateColumn({ name: 'created_at' })

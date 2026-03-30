@@ -1,37 +1,38 @@
 import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ExternalApiService } from './external-api.service';
-import { AuditLogService } from './services/audit-log.service';
 import { GetDataDto } from './dto/get-data.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { ExternalApiKey } from './entities/external-api-key.entity';
+import { ApiKeyAuthGuard } from './guards/api-key-auth.guard';
+import { ExternalClient } from './entities/external-client.entity';
 
 /**
- * Exposes read-only B2B endpoints protected by JWT authentication.
- * All access events are recorded in AUDIT_LOGS per US-35 AC-3.
+ * Exposes read-only B2B endpoints protected by API Key authentication.
+ * Access events are logged externally (Grafana or similar monitoring system).
  */
 @Controller('api/v1')
-@UseGuards(JwtAuthGuard)
+@UseGuards(ApiKeyAuthGuard)
 export class ExternalApiController {
   constructor(
     private readonly externalApiService: ExternalApiService,
-    private readonly auditLogService: AuditLogService,
   ) {}
 
   /**
    * Returns structured JSON data from the most recent Approved version.
+   * Data is filtered by the countries the client has access to.
    * @param query - Optional filters: country (alpha-2, comma-separated) and variable.
-   * @param req - HTTP request, used to extract client IP and JWT identity.
+   * @param req - HTTP request, used to extract client IP and API key identity.
    */
   @Get('data')
   async getData(@Query() query: GetDataDto, @Req() req: Request) {
-    const client = req.user as ExternalApiKey;
-    const result = await this.externalApiService.getNestedData(query);
+    const client = req.user as ExternalClient;
+    const result = await this.externalApiService.getNestedData(query, client);
 
-    await this.auditLogService.log({
-      action: 'EXTERNAL_DATA_ACCESS',
+    // Audit logging handled externally by monitoring system (e.g., Grafana)
+    console.log('[AUDIT] EXTERNAL_DATA_ACCESS', {
+      userId: client.id,
+      companyName: client.companyName,
       ipAddress: req.ip ?? 'unknown',
-      details: { clientName: client?.clientName, query },
+      query,
     });
 
     return result;
@@ -39,18 +40,21 @@ export class ExternalApiController {
 
   /**
    * Returns pre-signed S3 URLs (24h expiry) for approved Excel files.
-   * @param country - Optional alpha-2 country code. Omit for all countries.
-   * @param req - HTTP request, used to extract client IP and JWT identity.
+   * Only returns URLs for countries the client has access to.
+   * @param country - Optional alpha-2 country code. Omit for all authorized countries.
+   * @param req - HTTP request, used to extract client IP and API key identity.
    */
   @Get('files/download')
   async downloadFiles(@Query('country') country: string | undefined, @Req() req: Request) {
-    const client = req.user as ExternalApiKey;
-    const result = await this.externalApiService.getPreSignedUrls(country);
+    const client = req.user as ExternalClient;
+    const result = await this.externalApiService.getPreSignedUrls(country, client);
 
-    await this.auditLogService.log({
-      action: 'EXTERNAL_FILE_DOWNLOAD',
+    // Audit logging handled externally by monitoring system (e.g., Grafana)
+    console.log('[AUDIT] EXTERNAL_FILE_DOWNLOAD', {
+      userId: client.id,
+      companyName: client.companyName,
       ipAddress: req.ip ?? 'unknown',
-      details: { clientName: client?.clientName, country: country ?? 'all' },
+      country: country ?? 'all',
     });
 
     return result;

@@ -6,11 +6,11 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, Jo
  */
 @Entity('versions')
 export class Version {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column({ name: 'country_id' })
-  countryId: number;
+  @Column({ name: 'country_id', type: 'uuid' })
+  countryId: string;
 
   /**
    * Denormalized country code (alpha-2) joined from COUNTRIES table.
@@ -18,15 +18,15 @@ export class Version {
    */
   countryCode?: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   status: string;
 
-  @Column({ name: 's3_path' })
+  @Column({ name: 's3_path', type: 'varchar' })
   s3Path: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column({ name: 'approved_at', nullable: true })
-  approvedAt: Date;
+  @Column({ name: 'approved_at', type: 'timestamp', nullable: true })
+  approvedAt: Date | null;
 }

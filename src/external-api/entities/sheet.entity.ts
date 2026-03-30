@@ -6,15 +6,18 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
  */
 @Entity('sheets')
 export class Sheet {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column({ name: 'country_id' })
-  countryId: number;
+  @Column({ name: 'country_id', type: 'uuid' })
+  countryId: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   name: string;
 
-  @Column({ name: 'original_index' })
+  @Column({ name: 'original_index', type: 'int', default: 0 })
   originalIndex: number;
+
+  @Column({ name: 'extraction_schema', type: 'jsonb', nullable: true })
+  extractionSchema: object | null;
 }

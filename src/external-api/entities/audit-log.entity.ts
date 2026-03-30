@@ -6,19 +6,19 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
  */
 @Entity('audit_logs')
 export class AuditLog {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column({ name: 'user_id', nullable: true })
-  userId: number | null;
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
+  userId: string | null;
 
-  @Column({ name: 'country_id', nullable: true })
-  countryId: number | null;
+  @Column({ name: 'country_id', type: 'uuid', nullable: true })
+  countryId: string | null;
 
-  @Column()
+  @Column({ type: 'varchar' })
   action: string;
 
-  @Column({ name: 'ip_address', nullable: true })
+  @Column({ name: 'ip_address', type: 'varchar', nullable: true })
   ipAddress: string;
 
   @Column({ type: 'text', nullable: true })

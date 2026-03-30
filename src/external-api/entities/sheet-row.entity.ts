@@ -6,21 +6,24 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
  */
 @Entity('sheet_rows')
 export class SheetRow {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column({ name: 'sheet_id' })
-  sheetId: number;
+  @Column({ name: 'sheet_id', type: 'uuid' })
+  sheetId: string;
 
-  @Column({ name: 'version_id' })
-  versionId: number;
+  @Column({ name: 'version_id', type: 'uuid' })
+  versionId: string;
 
-  @Column({ name: 'row_index' })
+  @Column({ name: 'row_index', type: 'int' })
   rowIndex: number;
 
-  @Column({ name: 'row_hash' })
+  @Column({ name: 'row_hash', type: 'varchar' })
   rowHash: string;
 
   @Column({ type: 'jsonb' })
-  data: Record<string, unknown>;
+  data: object;
+
+  @Column({ type: 'varchar', nullable: true })
+  operation: string | null;
 }
