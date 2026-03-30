@@ -314,9 +314,15 @@ export class ExternalApiService {
   /**
    * Issues a pre-signed GET URL valid for 24 hours for the given S3 object key.
    * @param s3Key - The object path within the configured S3 bucket.
-   * @throws InternalServerErrorException if the S3 signing operation fails.
+   * @throws InternalServerErrorException if the S3 signing operation fails or S3 is not configured.
    */
   private async generatePresignedUrl(s3Key: string): Promise<string> {
+    if (!this.s3Client) {
+      throw new InternalServerErrorException(
+        'S3 is not configured. Cannot generate pre-signed URLs.',
+      );
+    }
+
     try {
       const command = new GetObjectCommand({
         Bucket: this.bucketName,
