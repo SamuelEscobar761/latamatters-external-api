@@ -12,17 +12,17 @@ import { ExternalApiModule } from './external-api/external-api.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        type: 'postgres',
+        type: config.get<string>('DB_TYPE', 'postgres') as any,
         host: config.get<string>('DB_HOST', 'localhost'),
         port: config.get<number>('DB_PORT', 5432),
-        username: config.get<string>('DB_USER', 'postgres'),
-        password: config.get<string>('DB_PASS', ''),
-        database: config.get<string>('DB_NAME', 'latamatters'),
+        username: config.get<string>('DB_USERNAME', 'postgres'),
+        password: config.get<string>('DB_PASSWORD', ''),
+        database: config.get<string>('DB_DATABASE', 'latamatters_db'),
         autoLoadEntities: true,
         synchronize: false,
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        ssl: config.get<string>('NODE_ENV') === 'production'
+          ? { rejectUnauthorized: false }
+          : false,
       }),
     }),
     ExternalApiModule,
